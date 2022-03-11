@@ -1,0 +1,65 @@
+package com.booking.staybooking.controller;
+
+import com.booking.staybooking.entity.Reservation;
+import com.booking.staybooking.entity.Stay;
+import com.booking.staybooking.entity.User;
+import com.booking.staybooking.service.ReservationService;
+import com.booking.staybooking.service.StayService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.security.Principal;
+import java.util.List;
+
+@RestController
+public class StayController {
+    private StayService stayService;
+    private ReservationService reservationService;
+
+    @Autowired
+    public StayController(StayService stayService, ReservationService reservationService) {
+        this.stayService = stayService;
+        this.reservationService = reservationService;
+    }
+
+    //返回如果有可能一堆的话，就用这个
+    @GetMapping(value = "/stays")
+    public List<Stay> listStays(Principal principal) {
+        return stayService.listByUser(principal.getName());
+    }
+
+    //返回如果只有一个，用这个
+    @GetMapping(value = "/stays/{stayId}")
+    public Stay getStay(@PathVariable Long stayId) {
+        return stayService.findByIdAndHost(stayId);
+    }
+
+    @PostMapping("/stays")
+    public void addStay(
+            @RequestParam("name") String name,
+            @RequestParam("address") String address,
+            @RequestParam("description") String description,
+            @RequestParam("guest_number") int guestNumber,
+            @RequestParam("images") MultipartFile[] images, Principal principal) {
+
+        Stay stay = new Stay.Builder().setName(name)
+                .setAddress(address)
+                .setDescription(description)
+                .setGuestNumber(guestNumber)
+                .setHost(new User.Builder().setUsername(principal.getName()).build())
+                .build();
+        stayService.add(stay, images);
+    }
+
+    @DeleteMapping("/stays/{stayId}")
+    public void deleteStay(@PathVariable Long stayId) {
+        stayService.delete(stayId);
+    }
+
+    @GetMapping(value = "/stays/reservations/{stayId}")
+    public List<Reservation> listReservations(@PathVariable Long stayId, Principal principal) {
+        return reservationService.listByStay(stayId);
+    }
+}
+

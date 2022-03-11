@@ -1,0 +1,10 @@
+package com.booking.staybooking.repository;
+
+import com.booking.staybooking.entity.Authority;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface AuthorityRepository extends JpaRepository<Authority, String> {
+
+}
